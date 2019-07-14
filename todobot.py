@@ -58,7 +58,7 @@ def handle_updates(updates):
             keyboard = build_keyboard(items)
             send_message("Select an item to mark complete.", chat, keyboard)
         elif text == "/start":
-            send_message("Welcome, I'm your personal todo list management bot. Send me a task you would like to add to your todo list!", chat)
+            send_message("Welcome, I'm your personal todo list management bot. Send me a task you would like to add to your todo list! To mark an item as completed, send /completed to select item.", chat)
         elif text.startswith("/"):
             send_message("Invalid command. Send /completed to mark a task complete.", chat)
             continue
