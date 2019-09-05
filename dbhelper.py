@@ -9,7 +9,7 @@ class DBHelper:
 
 
     def setup(self):
-        tblstmt = "CREATE TABLE IF NOT EXISTS users (name text, username text, type text, field1 text, field2 text, owner text, state int, current int)"
+        tblstmt = "CREATE TABLE IF NOT EXISTS users (name text, username text, type text, field1 text, condition text, field2 text, owner text, state int, current int)"
         # ownidx = "CREATE INDEX IF NOT EXISTS ownIndex ON users (owner ASC)"
         self.conn.execute(tblstmt)
         # self.conn.execute(ownidx)
@@ -17,8 +17,8 @@ class DBHelper:
 
     def update_field(self, state, owner, update_text=""): #depending on state, update relevant field
         if state == 0: #record chat_id
-            stmt = "INSERT INTO users VALUES (?,?,?,?,?,?,?,?)"
-            args = ('name', 'username', 'type', 'field1', 'field2', owner, 0, 100)
+            stmt = "INSERT INTO users VALUES (?,?,?,?,?,?,?,?,?)"
+            args = ('name', 'username', 'type', 'field1', 'NA', 'field2', owner, 0, 100)
             self.conn.execute(stmt, args)
             self.conn.commit()
 
@@ -56,11 +56,16 @@ class DBHelper:
             self.conn.execute(stmt, args)
             self.conn.commit()
 
+        elif state == 6:
+            stmt = "UPDATE users SET condition = (?), state = (?) WHERE owner = (?)"
+            args = (update_text, 6, owner)
+            self.conn.execute(stmt, args)
+            self.conn.commit()
 
     def read_state(self, owner):
         stmt = "SELECT * FROM users WHERE owner = (?) AND state <100"
         args = (owner, )
-        return [x[6] for x in self.conn.execute(stmt, args)] #x is a tuple in the form ("string", )
+        return [x[7] for x in self.conn.execute(stmt, args)] #x is a tuple in the form ("string", )
 
     def read_type(self, owner):
         stmt = "SELECT * FROM users WHERE owner = (?) AND state >= 0 AND state <100"
@@ -88,7 +93,7 @@ class DBHelper:
     #     # return [x[0] for x in self.conn.execute(stmt, args)] #x is a tuple in the form ("string", )
 
     def get_details(self, owner, index):
-        stmt = "SELECT name, username, type, field1, field2 FROM users WHERE owner = (?)"
+        stmt = "SELECT name, username, type, field1, condition, field2 FROM users WHERE owner = (?)"
         args = (owner, )
         return [x[index] for x in self.conn.execute(stmt, args)] #x is a tuple in the form ("string", )
         # return [x[0] for x in self.conn.execute(stmt, args)] #x is a tuple in the form ("string", )

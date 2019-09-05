@@ -57,6 +57,7 @@ def handle_updates(updates):
         forcereplykb = force_reply()
         removekb = remove_keyboard()
         options = build_keyboard()
+        itemcondition = build_keyboard2()
         emoji = 0
 
         # items = db.get_items(chat)
@@ -96,17 +97,21 @@ def handle_updates(updates):
                 send_message(text="Please choose from the options provided below.", chat_id=chat) #failsafe measure any
             print(str(db.read_state(chat)))
         elif str(db.read_state(chat)) == "[3]":
-            db.update_field(4, chat, text)
             if str(db.read_type(chat)) == "['OFFER']":
-                send_message(text="Out of 10, what is the condition of the item or the proficiency of your service?", chat_id=chat, reply_markup=forcereplykb)
+                db.update_field(6, chat, text)
+                send_message(text="Is your item new or used?", chat_id=chat, reply_markup=itemcondition)
             if str(db.read_type(chat)) == "['REQUEST']":
+                db.update_field(4, chat, text)
                 send_message(text="Give a short description for the item or service you are requesting for.", chat_id=chat, reply_markup=forcereplykb)
             print(str(db.read_state(chat)))
+        elif str(db.read_state(chat)) == "[6]":
+            db.update_field(4, chat, text)
+            send_message(text="Out of 10, what is the condition of the item or the proficiency of your service?", chat_id=chat, reply_markup=forcereplykb)
         elif str(db.read_state(chat)) == "[4]":
             db.update_field(5, chat, text)
             list = []
             index = 0
-            for x in range(5):
+            for x in range(6):
                 list.append(db.get_details(chat, index))
                 index += 1
 
@@ -125,7 +130,10 @@ def handle_updates(updates):
             # else:
             #     char = "@"
 
-            content = emoji + str(list[2]).strip('[\'\']') + "%0A" + "Name:%20" + str(list[0]).strip('[\'\']') + "%0A" + "Username:%20" + str(list[1]).strip('[\'\']') + "%0A" + "Item/Process:%20" + str(list[3]).strip('[\'\']') + "%0A" + desc + str(list[4]).strip('[\'\']') + condition
+            if str(list[4]).strip('[\'\']') == "NA":
+                content = emoji + str(list[2]).strip('[\'\']') + "%0A" + "Name:%20" + str(list[0]).strip('[\'\']') + "%0A" + "Username:%20" + str(list[1]).strip('[\'\']') + "%0A" + "Item/Process:%20" + str(list[3]).strip('[\'\']') + "%0A" + desc + str(list[5]).strip('[\'\']') + condition
+            else:
+                content = emoji + str(list[2]).strip('[\'\']') + "%0A" + "Name:%20" + str(list[0]).strip('[\'\']') + "%0A" + "Username:%20" + str(list[1]).strip('[\'\']') + "%0A" + "Item/Process:%20" + str(list[4]).strip('[\'\']') + "%0A" + desc + str(list[3]).strip('[\'\']') + "; " + str(list[5]).strip('[\'\']') + condition
             print(content)
             uri = "https://api.telegram.org/bot788359475:AAGkPieZnX76aC9fKY7Y7BibiApESl2wAmg/sendMessage?chat_id=@trybe_services&text=%s" % content
             urlopen(uri)
@@ -154,6 +162,11 @@ def handle_updates(updates):
 
 def build_keyboard():
     keyboard = [['OFFER', 'REQUEST']]
+    reply_markup = {"keyboard": keyboard, "resize_keyboard": True, "one_time_keyboard": True}
+    return json.dumps(reply_markup)
+
+def build_keyboard2():
+    keyboard = [['NEW', 'USED']]
     reply_markup = {"keyboard": keyboard, "resize_keyboard": True, "one_time_keyboard": True}
     return json.dumps(reply_markup)
 
