@@ -7,7 +7,7 @@ import requests
 
 from urllib.request import urlopen
 
-TOKEN = "967526375:AAEtE0EXObee7jS-3i7ejXO2NpiG9piHQr4"
+TOKEN = "788359475:AAGkPieZnX76aC9fKY7Y7BibiApESl2wAmg"
 URL = "https://api.telegram.org/bot{}/".format(TOKEN)
 
 from dbhelper import DBHelper
@@ -135,7 +135,7 @@ def handle_updates(updates):
             else:
                 content = emoji + str(list[2]).strip('[\'\']') + "%0A" + "Name:%20" + str(list[0]).strip('[\'\']') + "%0A" + "Username:%20" + str(list[1]).strip('[\'\']') + "%0A" + "Item/Process:%20" + str(list[4]).strip('[\'\']') + "%0A" + desc + str(list[3]).strip('[\'\']') + "; " + str(list[5]).strip('[\'\']') + condition
             print(content)
-            uri = "https://api.telegram.org/bot967526375:AAEtE0EXObee7jS-3i7ejXO2NpiG9piHQr4/sendMessage?chat_id=@RUAOK&text=%s" % content
+            uri = "https://api.telegram.org/bot788359475:AAGkPieZnX76aC9fKY7Y7BibiApESl2wAmg/sendMessage?chat_id=@trybe_services&text=%s" % content
             urlopen(uri)
             list.clear()
             db.delete_user(chat)
