@@ -143,20 +143,10 @@ def handle_updates(updates):
             # print(str(db.read_state(chat)))
 
 
-        # elif text in items:
-        #     keyboard = remove_keyboard()
-        #     db.delete_item(text, chat)
-        #     items = db.get_items(chat)
-        #     send_message("Item cleared.", chat)
-        #     message = "\n".join(items) #sends back the list of current items
-        #     send_message("TODO:\n"+message, chat, keyboard)
         else:
             send_message("Invalid response. Send /createpost to begin new post.", chat)
-            # db.add_item(text, chat)
-            # items = db.get_items(chat)
-            # send_message("Item added.", chat)
-            # message = "\n".join(items) #sends back the list of current items
-            # send_message("TODO:\n"+message, chat)
+            db.update_field(0, chat) #reset the state to 0
+            db.delete_user(chat)
 
 
 
