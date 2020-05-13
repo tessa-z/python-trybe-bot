@@ -1,5 +1,4 @@
 import pyrebase
-from collections import OrderedDict
 
 config = {
     "apiKey": "AIzaSyCuzOK3YTeM5GhZqSIdLBbbFDTVlPcv8d4",
@@ -8,59 +7,61 @@ config = {
     "storageBucket": "python-trybe-bot.appspot.com"
 }
 
-firebase = pyrebase.initialize_app(config)
 
-# Get a reference to the database service
-db = firebase.database()
+class FirebaseHelper:
 
+    def __init__(self):
+        firebase = pyrebase.initialize_app(config)
+        # Get a reference to the database service
+        self.db = firebase.database()
 
-def read_state(owner):
-    state_details = db.child("post_pending").child(owner).child("state").get().val()
-    return state_details
+    def read_state(self, owner):
+        state_details = self.db.child("post_pending").child(owner).child("state").get().val()
+        return state_details
 
+    def read_data_pending(self, owner, key):
+        data_value = self.db.child("post_pending").child(owner).child(key).get().val()
+        return data_value
 
-def read_data(owner, key):
-    data_value = db.child("post_pending").child(owner).child(key).get().val()
-    return data_value
+    def read_data_history(self, post_index, key):
+        history_data = self.db.child("post_history").child(post_index).child(key).get().val()
+        return history_data
 
+    def update_latest_index(self):
+        new_index = self.read_latest_index() + 1
+        self.db.child("latest_index").set(new_index)
 
-def update_latest_index():
-    old_index = db.child("latest_index").get().val()
-    new_index = str(int(old_index) + 1).zfill(5)
-    db.child("latest_index").set(new_index)
+    def read_latest_index(self):
+        latest_index = self.db.child("latest_index").get().val()
+        return latest_index
 
+    def add_history_entry(self, expired, chat_id):
+        history_data = {"expired": expired, "chat_id": chat_id}
+        latest_index = self.read_latest_index()
+        self.db.child("post_history").child(latest_index).set(history_data)
+        self.update_latest_index()
 
-def update_history(index, expired, username):
-    history_data = {"expired": expired, "username": username}
-    db.child("post_history").child(index).set(history_data)
+    def update_history_mark_expired(self, post_index):
+        history_data = {"expired": "true"}
+        self.db.child("post_history").child(post_index).update(history_data)
 
+    def update_data(self, owner, key, value):
+        pending_data = {key: value}
+        self.db.child("post_pending").child(owner).update(pending_data)
 
-def update_data(owner, key, value):
-    pending_data = {key: value}
-    db.child("post_pending").child(owner).update(pending_data)
+    def update_state(self, owner, state):
+        state_data = {"state": state}
+        self.db.child("post_pending").child(owner).update(state_data)
 
+    def delete_pending_post(self, owner):
+        self.db.child("post_pending").child(owner).remove()
 
-def update_state(owner, state):
-    state_data = {"state": state}
-    db.child("post_pending").child(owner).update(state_data)
+    def delete_pending_activity(self, owner):
+        self.db.child("posts_pending").child(owner).remove()
 
+    def read_post_data(self, owner):
+        post_details = self.db.child("post_pending").child(owner).get().val()
+        return post_details
 
-def delete_pending_post(owner):
-    db.child("post_pending").child(owner).child("item_name").remove()
+    # if __name__ == '__main__':
 
-
-def get_post_data(owner):
-    post_details = db.child("post_pending").child(owner).get().val()
-    return post_details
-
-
-if __name__ == '__main__':
-    # update_latest_index()
-    # update_history("00002", "false", "tessa_z")
-    update_data("557099000", "item_name", "fishies")
-    update_data("557099000", "state", 0)
-    update_data("557099000", "name", "Catto")
-    # print(read_state("557099000"))
-    # delete_pending_post("557099000")
-    print(get_post_data("557099000"))
-    print(type(get_post_data("557099000").get("item_name", None)))

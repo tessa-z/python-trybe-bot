@@ -1,48 +1,50 @@
 #!/usr/bin/env python3
 
-import urllib #url formatting
-import time #to enable timeout
+import urllib  # url formatting
+import time  # to enable timeout
 import json
 import requests
+import messages
+import database
 
 from urllib.request import urlopen
+from urllib.parse import quote
 
 TOKEN = "967526375:AAEtE0EXObee7jS-3i7ejXO2NpiG9piHQr4"
 URL = "https://api.telegram.org/bot{}/".format(TOKEN)
 
-from dbhelper import DBHelper
+convo = messages.Messages()
+db = database.FirebaseHelper()
 
-db = DBHelper()
 
-
-def get_url(url): #downloads content from url
+def get_url(url):  # downloads content from url
     response = requests.get(url)
-    content = response.content.decode("utf8") #decode for python compatibility
+    content = response.content.decode("utf8")  # decode for python compatibility
     return content
 
 
-def get_json_from_url(url): #parse content string into python dictionary
+def get_json_from_url(url):  # parse content string into python dictionary
     content = get_url(url)
-    js = json.loads(content) #loads -> load String
+    js = json.loads(content)  # loads -> load String
     return js
 
 
-def get_updates(offset=None): #/getUpdates from tele API
-    url = URL + "getUpdates?timeout=100" #long polling
+def get_updates(offset=None):  # /getUpdates from tele API
+    url = URL + "getUpdates?timeout=100"  # long polling
     if offset:
-        url += "&offset={}".format(offset) #further args are marked with &
+        url += "&offset={}".format(offset)  # further args are marked with &
     js = get_json_from_url(url)
     return js
 
 
 def get_last_update_id(updates):
-    update_ids = [] #initilizing a Python list
-    for update in updates["result"]: #looping through updates in result list
-        update_ids.append(int(update["update_id"])) #append the update id to empty list
+    update_ids = []  # initilizing a Python list
+    for update in updates["result"]:  # looping through updates in result list
+        update_ids.append(int(update["update_id"]))  # append the update id to empty list
     return max(update_ids)
 
 
-def get_last_chat_id_and_text(updates): #gets chat ID and message of most recent msg
+def get_last_chat_id_and_text(updates):  # gets chat ID and message of most recent msg
     num_updates = len(updates["result"])
     last_update = num_updates - 1
     text = updates["result"][last_update]["message"]["text"]
@@ -51,103 +53,177 @@ def get_last_chat_id_and_text(updates): #gets chat ID and message of most recent
 
 
 def handle_updates(updates):
+    # print(updates)
     for update in updates["result"]:
-        text = update["message"]["text"]
-        chat = update["message"]["chat"]["id"]
+        user_input = update["message"]["text"]
+        chat_id = update["message"]["chat"]["id"]
         forcereplykb = force_reply()
         removekb = remove_keyboard()
         options = build_keyboard()
-        itemcondition = build_keyboard2()
-        emoji = 0
+        itemcondition = build_keyboard2()  # extract this into a setup function
 
-        # items = db.get_items(chat)
-        if text == "/start":
-            db.update_field(0, chat)
-            send_message("Welcome to Trybe! I'm here to help you with your post. Send /createpost to begin. Send /cancel to terminate the service at any time.", chat)
-             #set state to 0
-            print(str(db.read_state(chat)))
-        elif text == "/cancel":
-            send_message(text="Process terminated. Send /createpost to restart.", chat_id=chat, reply_markup=removekb)
-            db.update_field(0, chat) #reset the state to 0
-            db.delete_user(chat)
-        elif text == "/createpost":
-            db.update_field(0, chat)
-            send_message(text="What's your name?", chat_id=chat, reply_markup=forcereplykb)
-            print(str(db.read_state(chat)))
-        elif text.startswith("/"):
-            send_message(text="Invalid command. Send /cancel to cancel this post.", chat_id=chat, reply_markup=removekb)
+        if user_input == "/start":
+            db.update_state(chat_id, 0)
+            send_message(text=convo.welcome, chat_id=chat_id)
+        elif user_input == "/cancel":
+            send_message(text=convo.process_terminated, chat_id=chat_id, reply_markup=removekb)
+            db.update_state(chat_id, 0)  # reset the state to 0
+            db.delete_pending_post(chat_id)
+            print(str(db.read_state(chat_id)))
+        elif user_input == "/createpost":
+            db.update_state(chat_id, 0)
+            db.update_data(chat_id, "command", user_input)
+            send_message(text=convo.ask_name, chat_id=chat_id, reply_markup=forcereplykb)
+            print(str(db.read_state(chat_id)))
+        elif user_input == "/checkpost":
+            # must check that users are not in the middle of constructing a post
+            db.update_data(chat_id, "command", user_input)
+            db.update_data(chat_id, "state", 0)
+            send_message(text=convo.check_post, chat_id=chat_id, reply_markup=forcereplykb)
+        elif user_input == "/markpost":
+            db.update_data(chat_id, "command", user_input)
+            db.update_data(chat_id, "state", 0)
+            send_message(text=convo.mark_post, chat_id=chat_id, reply_markup=forcereplykb)
+        elif user_input.startswith("/"):
+            send_message(text=convo.invalid_command, chat_id=chat_id, reply_markup=removekb)
             continue
-        elif str(db.read_state(chat)) == "[0]":
-            db.update_field(1, chat, text)
-            send_message(text="What's your telegram username?", chat_id=chat, reply_markup=forcereplykb)
-            print(str(db.read_state(chat)))
-        elif str(db.read_state(chat)) == "[1]":
-            db.update_field(2, chat, text)
-            send_message(text="Would you like to make an offer or a request today?", chat_id=chat, reply_markup=options)
-            print(str(db.read_state(chat)))
-        elif str(db.read_state(chat)) == "[2]":
-            print(str(db.read_type(chat)))
-            if text == "OFFER":
-                db.update_field(3, chat, text)
-                send_message(text="Give a name for the item or service you are offering!", chat_id=chat, reply_markup=forcereplykb)
-            elif text == "REQUEST":
-                db.update_field(3, chat, text)
-                send_message(text="Give a name for the item or service you are requesting for.", chat_id=chat, reply_markup=forcereplykb)
+        elif db.read_data_pending(chat_id, "command") == "/checkpost":
+            prev_conversation_state = db.read_state(chat_id)
+            if prev_conversation_state == 0:
+                is_expired = db.read_data_history(user_input, "expired")
+                if is_expired is not None:
+                    if is_expired == "false":
+                        send_message(text=convo.check_post_not_expired, chat_id=chat_id)
+                    elif is_expired == "true":
+                        send_message(text=convo.check_post_expired, chat_id=chat_id)
+                    else:
+                        send_message(text=convo.system_error, chat_id=chat_id)
+                else:
+                    send_message(text=convo.system_error, chat_id=chat_id)
             else:
-                send_message(text="Please choose from the options provided below.", chat_id=chat) #failsafe measure any
-            print(str(db.read_state(chat)))
-        elif str(db.read_state(chat)) == "[3]":
-            if str(db.read_type(chat)) == "['OFFER']":
-                db.update_field(6, chat, text)
-                send_message(text="Is your item new or used?", chat_id=chat, reply_markup=itemcondition)
-            if str(db.read_type(chat)) == "['REQUEST']":
-                db.update_field(4, chat, text)
-                send_message(text="Give a short description for the item or service you are requesting for.", chat_id=chat, reply_markup=forcereplykb)
-            print(str(db.read_state(chat)))
-        elif str(db.read_state(chat)) == "[6]":
-            db.update_field(4, chat, text)
-            send_message(text="Out of 10, what is the condition of the item or the proficiency of your service?", chat_id=chat, reply_markup=forcereplykb)
-        elif str(db.read_state(chat)) == "[4]":
-            db.update_field(5, chat, text)
-            list = []
-            index = 0
-            for x in range(6):
-                list.append(db.get_details(chat, index))
-                index += 1
-
-            if str(list[2]) == "['OFFER']": #offer
-                emoji = "%E2%9C%A8"
-                condition = "/10"
-                desc = "Condition:%20"
+                send_message(text=convo.system_error, chat_id=chat_id)
+            db.delete_pending_activity(chat_id)
+        elif db.read_data_pending(chat_id, "command") == "/markpost":
+            prev_conversation_state = db.read_state(chat_id)
+            if prev_conversation_state == 0:
+                # check if the person is the owner of the post, otherwise not authorised
+                owner_id = db.read_data_history(user_input, "chat_id")
+                if chat_id == owner_id:
+                    db.update_history_mark_expired(user_input)
+                    send_message(text=convo.mark_post_success, chat_id=chat_id)
+                else:
+                    send_message(text=convo.unauthorised_edit, chat_id=chat_id)
+                db.delete_pending_activity(chat_id)
             else:
-                emoji = "%F0%9F%8C%88"
-                condition = ""
-                desc = "Description:%20"
-
-            # if str(list[1]) == "@":
-            #     print(list[1][2])
-            #     char = ""
-            # else:
-            #     char = "@"
-
-            if str(list[4]).strip('[\'\']') == "NA":
-                content = emoji + str(list[2]).strip('[\'\']') + "%0A" + "Name:%20" + str(list[0]).strip('[\'\']') + "%0A" + "Username:%20" + str(list[1]).strip('[\'\']') + "%0A" + "Item/Process:%20" + str(list[3]).strip('[\'\']') + "%0A" + desc + str(list[5]).strip('[\'\']') + condition
-            else:
-                content = emoji + str(list[2]).strip('[\'\']') + "%0A" + "Name:%20" + str(list[0]).strip('[\'\']') + "%0A" + "Username:%20" + str(list[1]).strip('[\'\']') + "%0A" + "Item/Process:%20" + str(list[4]).strip('[\'\']') + "%0A" + desc + str(list[3]).strip('[\'\']') + "; " + str(list[5]).strip('[\'\']') + condition
-            print(content)
-            uri = "https://api.telegram.org/bot967526375:AAEtE0EXObee7jS-3i7ejXO2NpiG9piHQr4/sendMessage?chat_id=@RUAOK&text=%s" % content
-            urlopen(uri)
-            list.clear()
-            db.delete_user(chat)
-            send_message(text="Thank you for being a part of the Trybe community! Your offer/request has successfully been posted to the Trybe Services channel @RUAOK.", chat_id=chat, reply_markup=removekb)
-            # print(str(db.read_state(chat)))
-
-
+                send_message(text=convo.system_error, chat_id=chat_id)
         else:
-            send_message("Invalid response. Send /createpost to begin new post.", chat)
-            db.update_field(0, chat) #reset the state to 0
-            db.delete_user(chat)
+            prev_conversation_state = db.read_state(chat_id)
+            if prev_conversation_state == 0:
+                db.update_data(chat_id, "name", user_input)
+                send_message(text=convo.ask_username, chat_id=chat_id, reply_markup=forcereplykb)
+                db.update_state(chat_id, 1)
+                print(str(db.read_state(chat_id)))
+            elif prev_conversation_state == 1:
+                db.update_data(chat_id, "username", user_input)
+                send_message(text=convo.ask_type, chat_id=chat_id, reply_markup=options)
+                db.update_state(chat_id, 2)
+                print(str(db.read_state(chat_id)))
+            elif prev_conversation_state == 2:
+                if user_input == "OFFER":
+                    db.update_data(chat_id, "type", user_input)
+                    send_message(text=convo.ask_offer_item_name, chat_id=chat_id, reply_markup=forcereplykb)
+                    db.update_state(chat_id, 3)
+                elif user_input == "REQUEST":
+                    db.update_data(chat_id, "type", user_input)
+                    send_message(text=convo.ask_request_item_name, chat_id=chat_id, reply_markup=forcereplykb)
+                    db.update_state(chat_id, 3)
+                else:
+                    send_message(text=convo.invalid_type, chat_id=chat_id)  # fail safe measure any
+                print(str(db.read_state(chat_id)))
+            elif prev_conversation_state == 3:
+                type_of_post = db.read_data_pending(chat_id, "type")
+                if type_of_post == "OFFER":
+                    db.update_data(chat_id, "item_name", user_input)
+                    send_message(text=convo.ask_condition, chat_id=chat_id, reply_markup=itemcondition)
+                    db.update_state(chat_id, 4)
+                elif type_of_post == "REQUEST":
+                    db.update_data(chat_id, "item_name", user_input)
+                    send_message(text=convo.ask_item_description, chat_id=chat_id, reply_markup=forcereplykb)
+                    db.update_state(chat_id, 4)
+                else:
+                    send_message(text=convo.invalid_response, chat_id=chat_id)  # fail safe measure any
+                print(str(db.read_state(chat_id)))
+            elif prev_conversation_state == 4:  # updated item name, update condition now
+                type_of_post = db.read_data_pending(chat_id, "type")
+                if type_of_post == "OFFER":
+                    if user_input == "NEW" or user_input == "USED":
+                        db.update_data(chat_id, "condition", user_input)  # update condition
+                        send_message(text=convo.ask_condition_rating, chat_id=chat_id, reply_markup=forcereplykb)
+                        db.update_state(chat_id, 5)
+                        print(str(db.read_state(chat_id)))
+                    else:
+                        send_message(text=convo.invalid_type, chat_id=chat_id)
+                else:
+                    db.update_data(chat_id, "item_description", user_input)
+                    construct_post(chat_id)
+                    send_message(text=convo.thank_you, chat_id=chat_id, reply_markup=removekb)
+            elif prev_conversation_state == 5:
+                db.update_data(chat_id, "cond_rating", user_input)
+                construct_post(chat_id)
+                send_message(text=convo.thank_you, chat_id=chat_id, reply_markup=removekb)
+            else:
+                send_message(text=convo.invalid_response, chat_id=chat_id)
 
+
+def construct_post(chat_id):
+    post_details = db.read_post_data(chat_id)
+    db.delete_pending_post(chat_id)
+
+    # get compulsory details for fields
+    type_of_post = post_details.get("type", None)
+    name = post_details.get("name", None)
+    username = check_username(post_details.get("username", None))
+    item_name = post_details.get("item_name", None)
+
+    if type_of_post == "OFFER":  # OFFER
+        condition = post_details.get("condition")
+        cond_rating = check_cond_rating(post_details.get("cond_rating"))
+        content = "%E2%9C%A8" + quote(type_of_post + "\n"
+                                      + "Name: " + name + "\n"
+                                      + "Username: " + username + "\n"
+                                      + "Item/Process " + item_name + "\n"
+                                      + "Condition: " + condition + "; " + cond_rating + "/10")
+
+    elif type_of_post == "REQUEST":  # REQUEST
+        item_description = post_details.get("item_description")
+        content = "%F0%9F%8C%88" + quote(type_of_post + "\n"
+                                         + "Name: " + name + "\n"
+                                         + "Username: " + username + "\n"
+                                         + "Item/Process: " + item_name + "\n"
+                                         + "Description: " + item_description)
+    else:
+        send_message(text=convo.invalid_response, chat_id=chat_id)
+        content = ""
+    print(content)
+    uri = "https://api.telegram.org/bot967526375:AAEtE0EXObee7jS-3i7ejXO2NpiG9piHQr4/sendMessage?chat_id" \
+          "=@trybetest&text=%s" % content
+    urlopen(uri)
+
+    db.add_history_entry("false", chat_id)
+
+
+def check_username(username):
+    if username[0] != "@":
+        return "@" + username
+    else:
+        return username
+
+
+def check_cond_rating(cond_rating, chat_id):
+    if int(cond_rating) > 10 or int(cond_rating) < 0:
+        send_message(text=convo.invalid_response, chat_id=chat_id)
+    else:
+        return cond_rating
 
 
 def build_keyboard():
@@ -155,20 +231,24 @@ def build_keyboard():
     reply_markup = {"keyboard": keyboard, "resize_keyboard": True, "one_time_keyboard": True}
     return json.dumps(reply_markup)
 
+
 def build_keyboard2():
     keyboard = [['NEW', 'USED']]
     reply_markup = {"keyboard": keyboard, "resize_keyboard": True, "one_time_keyboard": True}
     return json.dumps(reply_markup)
 
+
 def force_reply():
     reply_markup = {"force_reply": True, "selective": False}
     return json.dumps(reply_markup)
+
 
 def remove_keyboard():
     reply_markup = {"remove_keyboard": True}
     return json.dumps(reply_markup)
 
-def send_message(text, chat_id, reply_markup=None): #/sendMessage API with text and chat ID
+
+def send_message(text, chat_id, reply_markup=None):  # /sendMessage API with text and chat ID
     text = urllib.parse.quote_plus(text)
     url = URL + "sendMessage?text={}&chat_id={}".format(text, chat_id)
     if reply_markup:
@@ -177,10 +257,9 @@ def send_message(text, chat_id, reply_markup=None): #/sendMessage API with text 
 
 
 def main():
-    db.setup()
     last_update_id = None
     while True:
-        updates = get_updates(last_update_id) #keeps checking for the id with one bigger than the prev
+        updates = get_updates(last_update_id)  # keeps checking for the id with one bigger than the prev
         # print(len(updates["result"]))
         if len(updates["result"]) > 0:
             last_update_id = get_last_update_id(updates) + 1
