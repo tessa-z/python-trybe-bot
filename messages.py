@@ -1,15 +1,22 @@
 class Messages:
-    # info messages
+    # general info messages
     process_terminated = "Process terminated. Send /createpost to restart."
     invalid_command = "Invalid command. Send /cancel to cancel this post."
-    invalid_type = "Please choose from the options provided below."
+    invalid_options = "Please choose from the options provided below."
     invalid_response = "Invalid response. Send /createpost to begin new post."
+    invalid_range = "Please choose a number from 0 to 10~"
     system_error = "Something went wrong oof."
-    unauthorised_edit = "Oops, you cannot mark a post as expired if you are not the post owner!"
+    unknown_text = "Hi, how can I help? You can choose an option from my command menu. Send /createpost to begin new " \
+                   "post."
 
     # default messages
-    welcome = "Welcome to Trybe! I'm here to help you with your post. Send /createpost to begin. Send /cancel " \
-              "to terminate the service at any time. "
+    welcome = "Welcome to Trybe!\n" \
+              "I'm here to help you with your post.\n" \
+              "Send me:\n" \
+              "/createpost - to make a post\n" \
+              "/cancel - to terminate post\n" \
+              "/checkpost - to check post availability\n" \
+              "/markpost - to mark your post as fulfilled"
     thank_you = "Thank you for being a part of the Trybe community! Your offer/request has successfully been posted " \
                 "to the Trybe Services channel @RUAOK. "
 
@@ -30,3 +37,5 @@ class Messages:
     mark_post = "Which post would you like to mark completed? Please give me the post number indicated at the top of " \
                 "the your post."
     mark_post_success = "Success! Your post has been marked as expired."
+    unauthorised_edit = "Oops, you cannot mark a post as expired if you are not the post owner!"
+    post_not_found = "Oh no, we can't find the post in our database!"
