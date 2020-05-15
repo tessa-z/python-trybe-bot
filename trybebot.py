@@ -11,9 +11,6 @@ convo = messages.Messages()
 db = database.FirebaseHelper()
 kb = keyboard.KeyBoard()
 
-updater = Updater(token="1179717191:AAG2EeROiLFFBqYQ3ofq1ltDQM1zU3ZIETI", use_context=True)
-dispatcher = updater.dispatcher
-
 
 def handle_updates(updates):
     # print(updates)
