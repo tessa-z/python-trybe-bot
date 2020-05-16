@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import logging
-import time  # to enable timeout
 import random
 
 from telegram.ext import Updater
@@ -11,7 +10,6 @@ import messages
 import database
 import convologic
 import keyboard
-import comms
 
 convo = messages.Messages()
 db = database.FirebaseHelper()
@@ -23,11 +21,15 @@ dispatcher = updater.dispatcher
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s = %(message)s', level=logging.INFO)
 
 
-def start(update, context):
+def start_(update, context):
     context.bot.send_message(chat_id=update.effective_chat.id, text=convo.welcome)
 
 
-def cancel(update, context):
+def help_(update, context):
+    context.bot.send_message(chat_id=update.effective_chat.id, text=convo.help)
+
+
+def cancel_(update, context):
     chat_id = update.effective_chat.id
     context.bot.send_message(chat_id=chat_id, text=convo.process_terminated)
     db.update_state(chat_id, 0)  # reset the state to 0
@@ -35,7 +37,7 @@ def cancel(update, context):
     print(str(db.read_state(chat_id)))
 
 
-def unknown(update, context):
+def unknown_(update, context):
     context.bot.send_message(chat_id=update.effective_chat.id, text=convo.invalid_command)
 
 
@@ -47,7 +49,7 @@ def create_post(update, context):
     db.update_data(chat_id, "command", user_input)
 
 
-def chat(update, context):
+def chat_(update, context):
     chat_id = update.effective_chat.id
     user_input = update.message.text
     current_command = db.read_data_pending(chat_id, "command")
@@ -58,7 +60,7 @@ def chat(update, context):
     elif current_command == "/createpost":
         convologic.handle_create_post(chat_id, user_input, context)
     else:
-        context.bot.send_message(chat_id=chat_id, text=convo.unknown_text)
+        context.bot.send_message(chat_id=update.effective_chat.id, text=update.message.text)
 
 
 def check_post(update, context):
@@ -72,15 +74,23 @@ def check_post(update, context):
 def mark_post(update, context):
     chat_id = update.effective_chat.id
     user_input = update.message.text
-    context.bot.send_message(chat_id=chat_id, text=convo.mark_post, reply_markup=kb.forcereplykb)
+    context.bot.send_message(chat_id=chat_id, text=convo.mark_post_0, reply_markup=kb.forcereplykb)
+    context.bot.send_message(chat_id=chat_id, text=convo.mark_post_1, reply_markup=kb.forcereplykb)
     db.update_data(chat_id, "command", user_input)
     db.update_data(chat_id, "state", 0)
 
 
-def sticker(update, context):
+def sticker_(update, context):
     sticker_set = context.bot.get_sticker_set(update.message.sticker.set_name)
     random_sticker_id = get_random_sticker_id(sticker_set)
     context.bot.send_sticker(chat_id=update.effective_chat.id, sticker=random_sticker_id)
+
+
+def animation_(update, context):
+    chat_id = update.effective_chat.id
+    context.bot.send_message(chat_id=chat_id, text=convo.gif_seal_0)
+    context.bot.send_animation(chat_id=chat_id, animation=convo.gif_seal_id)
+    context.bot.send_message(chat_id=chat_id, text=convo.gif_seal_1)
 
 
 def get_random_sticker_id(sticker_set):
@@ -90,56 +100,11 @@ def get_random_sticker_id(sticker_set):
     return random_sticker_id
 
 
-def handle_updates(updates):
-    # print(updates)
-    for update in updates["result"]:
-        chat_id = update["message"]["chat"]["id"]
-        try:
-            user_input = update["message"]["text"]
-        except Exception:
-            comms.send_message(text=convo.invalid_response, chat_id=chat_id)
-
-        if user_input == "/start":
-            comms.send_message(text=convo.welcome, chat_id=chat_id)
-        elif user_input == "/cancel":
-            comms.send_message(text=convo.process_terminated, chat_id=chat_id, reply_markup=kb.removekb)
-            db.update_state(chat_id, 0)  # reset the state to 0
-            db.delete_pending_activity(chat_id)
-            print(str(db.read_state(chat_id)))
-        elif user_input == "/createpost":
-            db.update_state(chat_id, 0)
-            db.update_data(chat_id, "command", user_input)
-            comms.send_message(text=convo.ask_name, chat_id=chat_id, reply_markup=kb.forcereplykb)
-            print(str(db.read_state(chat_id)))
-        elif user_input == "/checkpost":
-            # must check that users are not in the middle of constructing a post
-            db.update_data(chat_id, "command", user_input)
-            db.update_data(chat_id, "state", 0)
-            comms.send_message(text=convo.check_post, chat_id=chat_id, reply_markup=kb.forcereplykb)
-        elif user_input == "/markpost":
-            db.update_data(chat_id, "command", user_input)
-            db.update_data(chat_id, "state", 0)
-            comms.send_message(text=convo.mark_post, chat_id=chat_id, reply_markup=kb.forcereplykb)
-        elif user_input.startswith("/"):
-            comms.send_message(text=convo.invalid_command, chat_id=chat_id, reply_markup=kb.removekb)
-            continue
-        else:
-            current_command = db.read_data_pending(chat_id, "command")
-            if current_command == "/checkpost":
-                convologic.handle_check_post(chat_id, user_input)
-            elif current_command == "/markpost":
-                convologic.handle_mark_post(chat_id, user_input)
-            elif current_command == "/createpost":
-                convologic.handle_create_post(chat_id, user_input)
-            else:
-                comms.send_message(text=convo.unknown_text, chat_id=chat_id)
-
-
 def setup_handlers():
-    start_handler = CommandHandler('start', start)
+    start_handler = CommandHandler('start', start_)
     dispatcher.add_handler(start_handler)
 
-    cancel_handler = CommandHandler('cancel', cancel)
+    cancel_handler = CommandHandler('cancel', cancel_)
     dispatcher.add_handler(cancel_handler)
 
     create_post_handler = CommandHandler('createpost', create_post)
@@ -151,27 +116,18 @@ def setup_handlers():
     mark_post_handler = CommandHandler('markpost', mark_post)
     dispatcher.add_handler(mark_post_handler)
 
-    chat_handler = MessageHandler(Filters.text & (~Filters.command), chat)
+    chat_handler = MessageHandler(Filters.text & (~Filters.command), chat_)
     dispatcher.add_handler(chat_handler)
 
-    sticker_handler = MessageHandler(Filters.sticker, sticker)
+    sticker_handler = MessageHandler(Filters.sticker, sticker_)
     dispatcher.add_handler(sticker_handler)
 
+    animation_handler = MessageHandler(Filters.animation, animation_)
+    dispatcher.add_handler(animation_handler)
+
     # put this last or other commands would be skipped!
-    unknown_handler = MessageHandler(Filters.command, unknown)
+    unknown_handler = MessageHandler(Filters.command, unknown_)
     dispatcher.add_handler(unknown_handler)
-
-
-def main():
-    last_update_id = None
-    while True:
-        updates = comms.get_updates(last_update_id)  # keeps checking for the id with one bigger than the prev
-        # print(len(updates["result"]))
-        print(updates)
-        if len(updates["result"]) > 0:
-            last_update_id = comms.get_last_update_id(updates) + 1
-            handle_updates(updates)
-        time.sleep(0.5)
 
 
 if __name__ == '__main__':

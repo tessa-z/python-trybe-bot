@@ -11,12 +11,12 @@ class KeyBoard:
         self.usernameget = self.build_keyboard3()
 
     def build_keyboard1(self):
-        keyboard = [['OFFER', 'REQUEST']]
+        keyboard = [['Offer', 'Request']]
         reply_markup = {"keyboard": keyboard, "resize_keyboard": True, "one_time_keyboard": True}
         return json.dumps(reply_markup)
 
     def build_keyboard2(self):
-        keyboard = [['NEW', 'USED']]
+        keyboard = [['New', 'Used']]
         reply_markup = {"keyboard": keyboard, "resize_keyboard": True, "one_time_keyboard": True}
         return json.dumps(reply_markup)
 

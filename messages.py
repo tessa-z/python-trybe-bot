@@ -4,18 +4,25 @@ class Messages:
     invalid_command = "Hm.. I don't know what you mean."
     invalid_options = "Please choose from the options provided below."
     invalid_response = "I don't get what you mean. Cancelling process.."
-    invalid_range = "Please choose a number from 0 to 10~"
+    invalid_range = "Please choose a whole number from 0 to 10!"
+    invalid_number = "Please send me a whole number!"
     system_error = "Something went wrong oof. Thanks for finding the bug!"
-    unknown_text = "Hi, how can I help? You can choose an option from my command menu."
 
     # default messages
-    welcome = "Welcome to Trybe!\n" \
-              "I'm here to help you with your post.\n" \
-              "Send me:\n" \
+    welcome = "Hello there! Welcome to the R◡̈AOK channel, a community resource platform that serves mainly " \
+              "under-served and disadvantaged youth in the community.\n\n" \
+              "This was created by @tessa_z in collaboration with SYNC.\n\n" \
+              "I'll help you with your offers and requests! Send me:\n" \
               "/createpost - to make a new post\n" \
               "/checkpost - to check post availability\n" \
-              "/markpost - to mark post as fulfilled\n"\
-              "/cancel - to cancel the current process"
+              "/markpost - to mark post as fulfilled\n" \
+              "/cancel - to cancel the current process\n"
+    help = "Hi! How can I help?\n" \
+           "Send me:\n" \
+           "/createpost - to make a new post\n" \
+           "/checkpost - to check post availability\n" \
+           "/markpost - to mark post as fulfilled\n" \
+           "/cancel - to cancel the current process"
     thank_you = "Thank you for being a part of the Trybe community! Your offer/request has successfully been posted " \
                 "to the Trybe Services channel @RUAOK. "
 
@@ -44,8 +51,13 @@ class Messages:
     check_post_sendusername = "You can contact them at: @"
     check_post_nogetusername = "Sure, just let me know when you are ready!"
 
-    mark_post = "Which post would you like to mark completed? Please give me the post number indicated at the top of " \
-                "the your post."
+    mark_post_0 = "Which post would you like to mark completed?"
+    mark_post_1 = "Please give me the post number indicated at the top of your post."
     mark_post_success = "Success! Your post has been marked as expired."
-    unauthorised_edit = "Oops, you cannot mark a post as expired if you are not the post owner!"
+    unauthorised_edit = "Oops, you cannot mark a post as fulfilled if you are not the post owner!"
     post_not_found = "Oh no, I can't find the post in my database!"
+
+    # easter egg messages
+    gif_seal_0 = "Wow hello!"
+    gif_seal_1 = "You are visited by the seal of approval."
+    gif_seal_id = "CgACAgQAAxkBAAIKXF6_5twThp6TaY33XsQkW1WCRnSBAAIDAgACG_31UhpBhKCMurz9GQQ"
