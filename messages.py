@@ -56,6 +56,7 @@ class Messages:
     mark_post_success = "Success! Your post has been marked as expired."
     unauthorised_edit = "Oops, you cannot mark a post as fulfilled if you are not the post owner!"
     post_not_found = "Oh no, I can't find the post in my database!"
+    appendix_message = "Send me another number or /cancel to end process."
 
     # easter egg messages
     gif_seal_0 = "Wow hello!"

@@ -43,21 +43,26 @@ def handle_check_post(chat_id, user_input, context):
 
 def handle_mark_post(chat_id, user_input, context):
     prev_conversation_state = db.read_state(chat_id)
-    db.delete_pending_activity(chat_id)
     if prev_conversation_state == 0:
         # check if the person is the owner of the post, otherwise not authorised
-        owner_id = db.read_data_history(user_input, "chat_id")
-        if chat_id == owner_id:
-            if is_integer(user_input):
-                db.update_history_mark_expired(user_input)
-                context.bot.send_message(text=convo.mark_post_success, chat_id=chat_id)
+        if is_integer(user_input):
+            owner_id = db.read_data_history(user_input, "chat_id")
+            if chat_id == owner_id:
+                if is_integer(user_input):
+                    db.update_history_mark_expired(user_input)
+                    context.bot.send_message(text=convo.mark_post_success, chat_id=chat_id)
+                    db.delete_pending_activity(chat_id)
+                else:
+                    context.bot.send_message(text=convo.invalid_number, chat_id=chat_id)
             else:
-                context.bot.send_message(text=convo.invalid_number, chat_id=chat_id)
+                if owner_id is None:
+                    context.bot.send_message(text=convo.post_not_found, chat_id=chat_id)
+                    context.bot.send_message(text=convo.appendix_message, chat_id=chat_id)
+                else:
+                    context.bot.send_message(text=convo.unauthorised_edit, chat_id=chat_id)
+                    context.bot.send_message(text=convo.appendix_message, chat_id=chat_id)
         else:
-            if owner_id is None:
-                context.bot.send_message(text=convo.post_not_found, chat_id=chat_id)
-            else:
-                context.bot.send_message(text=convo.unauthorised_edit, chat_id=chat_id)
+            context.bot.send_message(text=convo.invalid_number, chat_id=chat_id)
     else:
         context.bot.send_message(text=convo.system_error, chat_id=chat_id)
 
@@ -136,6 +141,7 @@ def handle_create_post(chat_id, user_input, context):
             construct_post(chat_id, context)
         else:
             context.bot.send_message(text=convo.invalid_range, chat_id=chat_id)
+    # elif prev_conversation_state == 6:
     else:
         context.bot.send_message(text=convo.invalid_response, chat_id=chat_id)
         db.delete_pending_activity(chat_id)
@@ -170,11 +176,15 @@ def construct_post(chat_id, context):
         context.bot.send_message(text=convo.invalid_response, chat_id=chat_id)
         content = ""
     print(content)
+    send_post(content)
+
+    db.add_history_entry("false", username, chat_id)
+
+
+def send_post(content):
     uri = "https://api.telegram.org/bot967526375:AAEtE0EXObee7jS-3i7ejXO2NpiG9piHQr4/sendMessage?chat_id" \
           "=@ruaok&text=%s" % content
     urlopen(uri)
-
-    db.add_history_entry("false", username, chat_id)
 
 
 def check_username(username):
