@@ -35,8 +35,8 @@ class FirebaseHelper:
         latest_index = self.db.child("latest_index").get().val()
         return latest_index
 
-    def add_history_entry(self, expired, chat_id):
-        history_data = {"expired": expired, "chat_id": chat_id}
+    def add_history_entry(self, expired, username, chat_id):
+        history_data = {"expired": expired, "username": username, "chat_id": chat_id}
         latest_index = self.read_latest_index()
         self.db.child("post_history").child(latest_index).set(history_data)
         self.update_latest_index()
