@@ -1,6 +1,6 @@
 class Messages:
     # general info messages
-    process_terminated = "I just cancelled the process. Send /createpost to restart."
+    process_terminated = "I just cancelled the process. Send /createpost to make a new post."
     invalid_command = "Hm.. I don't know what you mean."
     invalid_options = "Please choose from the options provided below."
     invalid_response = "I don't get what you mean. Cancelling process.."
@@ -42,9 +42,13 @@ class Messages:
     ask_item_description = "Give a short description for the item or service you are requesting for."
     ask_condition = "Is your item new or used?"
     ask_condition_rating = "Out of 10, what is the condition of the item or the proficiency of your service?"
+    ask_preview_0 = "Here's how your post will look on the channel:"
+    ask_preview_1 = "Should I go ahead and post it?"
+    ask_preview_cancelled = "Your post has been cancelled! Send /createpost to to make another post."
 
     # post checking messages
-    check_post = "Which post would you like to check? Please give me the post number indicated at the top of the post."
+    check_post_0 = "Which post would you like to check?"
+    check_post_1 = "Please give me the post number indicated at the top of the post."
     check_post_expired = "Oh no, the offer/request you have checked is no longer available :("
     check_post_not_expired = "Great! The offer/request you have checked is still available."
     check_post_getusername = "Would you like to contact the owner of the post?"
@@ -60,5 +64,5 @@ class Messages:
 
     # easter egg messages
     gif_seal_0 = "Wow hello!"
-    gif_seal_1 = "You are visited by the seal of approval."
+    gif_seal_1 = "You have found a seal of approval."
     gif_seal_id = "CgACAgQAAxkBAAIKXF6_5twThp6TaY33XsQkW1WCRnSBAAIDAgACG_31UhpBhKCMurz9GQQ"

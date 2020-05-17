@@ -9,6 +9,7 @@ class KeyBoard:
         self.options = self.build_keyboard1()
         self.itemcondition = self.build_keyboard2()  # extract this into a setup function
         self.usernameget = self.build_keyboard3()
+        self.preview = self.build_keyboard4()
 
     def build_keyboard1(self):
         keyboard = [['Offer', 'Request']]
@@ -22,6 +23,11 @@ class KeyBoard:
 
     def build_keyboard3(self):
         keyboard = [['Sure!', 'Maybe later']]
+        reply_markup = {"keyboard": keyboard, "resize_keyboard": True, "one_time_keyboard": True}
+        return json.dumps(reply_markup)
+
+    def build_keyboard4(self):
+        keyboard = [['Great, please post!', 'Wait, something\'s wrong, cancel post!']]
         reply_markup = {"keyboard": keyboard, "resize_keyboard": True, "one_time_keyboard": True}
         return json.dumps(reply_markup)
 

@@ -26,15 +26,15 @@ def start_(update, context):
 
 
 def help_(update, context):
-    context.bot.send_message(chat_id=update.effective_chat.id, text=convo.help)
+    chat_id = update.effective_chat.id
+    context.bot.send_message(chat_id=chat_id, text=convo.help)
+    db.delete_pending_activity(chat_id)
 
 
 def cancel_(update, context):
     chat_id = update.effective_chat.id
     context.bot.send_message(chat_id=chat_id, text=convo.process_terminated)
-    db.update_state(chat_id, 0)  # reset the state to 0
     db.delete_pending_activity(chat_id)
-    print(str(db.read_state(chat_id)))
 
 
 def unknown_(update, context):
@@ -66,7 +66,8 @@ def chat_(update, context):
 def check_post(update, context):
     chat_id = update.effective_chat.id
     user_input = update.message.text
-    context.bot.send_message(chat_id=chat_id, text=convo.check_post, reply_markup=kb.forcereplykb)
+    context.bot.send_message(chat_id=chat_id, text=convo.check_post_0, reply_markup=kb.forcereplykb)
+    context.bot.send_message(chat_id=chat_id, text=convo.check_post_1, reply_markup=kb.forcereplykb)
     db.update_data(chat_id, "command", user_input)
     db.update_data(chat_id, "state", 0)
 
@@ -106,6 +107,9 @@ def setup_handlers():
 
     cancel_handler = CommandHandler('cancel', cancel_)
     dispatcher.add_handler(cancel_handler)
+
+    help_handler = CommandHandler('help', help_)
+    dispatcher.add_handler(help_handler)
 
     create_post_handler = CommandHandler('createpost', create_post)
     dispatcher.add_handler(create_post_handler)

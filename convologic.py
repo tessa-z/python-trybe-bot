@@ -1,7 +1,5 @@
 import string
 
-from urllib.request import urlopen
-from urllib.parse import quote
 from trybebot import (db, convo, kb)
 
 
@@ -131,17 +129,33 @@ def handle_create_post(chat_id, user_input, context):
             else:
                 context.bot.send_message(text=convo.invalid_options, chat_id=chat_id)
         else:
-            context.bot.send_message(text=convo.thank_you, chat_id=chat_id, reply_markup=kb.removekb)
             db.update_data(chat_id, "item_description", user_input)
-            construct_post(chat_id, context)
+            db.update_state(chat_id, 6)
+            preview_content = construct_post(chat_id, context)
+            context.bot.send_message(text=convo.ask_preview_0, chat_id=chat_id)
+            context.bot.send_message(text=preview_content, chat_id=chat_id)
+            context.bot.send_message(text=convo.ask_preview_1, chat_id=chat_id, reply_markup=kb.preview)
     elif prev_conversation_state == 5:
         if check_cond_rating(user_input):
-            context.bot.send_message(text=convo.thank_you, chat_id=chat_id, reply_markup=kb.removekb)
             db.update_data(chat_id, "cond_rating", user_input)
-            construct_post(chat_id, context)
+            db.update_state(chat_id, 6)
+            preview_content = construct_post(chat_id, context)
+            context.bot.send_message(text=convo.ask_preview_0, chat_id=chat_id)
+            context.bot.send_message(text=preview_content, chat_id=chat_id)
+            context.bot.send_message(text=convo.ask_preview_1, chat_id=chat_id, reply_markup=kb.preview)
         else:
             context.bot.send_message(text=convo.invalid_range, chat_id=chat_id)
-    # elif prev_conversation_state == 6:
+    elif prev_conversation_state == 6:
+        if user_input == "Great, please post!":
+            username_id = context.bot.get_chat(chat_id=chat_id).username
+            actual_content = construct_post(chat_id, context)
+            send_post(context, actual_content)
+            context.bot.send_message(text=convo.thank_you, chat_id=chat_id, reply_markup=kb.removekb)
+            db.delete_pending_activity(chat_id)
+            db.add_history_entry("false", username_id, chat_id)
+        elif user_input == "Oh no, cancel post!":
+            context.bot.send_message(text=convo.ask_preview_cancelled, chat_id=chat_id)
+            db.delete_pending_activity(chat_id)
     else:
         context.bot.send_message(text=convo.invalid_response, chat_id=chat_id)
         db.delete_pending_activity(chat_id)
@@ -149,42 +163,35 @@ def handle_create_post(chat_id, user_input, context):
 
 def construct_post(chat_id, context):
     post_details = db.read_post_data(chat_id)
-    db.delete_pending_activity(chat_id)
 
     # get compulsory details for fields
     type_of_post = post_details.get("type", None)
     name = string.capwords(post_details.get("name", None))
-    username = check_username(post_details.get("username", None))
     item_name = post_details.get("item_name", None).capitalize()
     post_id = " #" + str(db.read_latest_index())
 
     if type_of_post == "Offer":  # Offer
         condition = post_details.get("condition")
         cond_rating = post_details.get("cond_rating")
-        content = "%E2%9C%A8" + quote(type_of_post + post_id + "\n"
-                                      + "Name: " + name + "\n"
-                                      + "Item/Process: " + item_name + "\n"
-                                      + "Condition: " + condition + "; " + cond_rating + "/10")
+        content = "✨" + type_of_post + post_id + "\n" \
+                  + "Name: " + name + "\n" \
+                  + "Item/Process: " + item_name + "\n" \
+                  + "Condition: " + condition + "; " + cond_rating + "/10"
 
     elif type_of_post == "Request":  # Request
         item_description = post_details.get("item_description").capitalize()
-        content = "%F0%9F%8C%88" + quote(type_of_post + post_id + "\n"
-                                         + "Name: " + name + "\n"
-                                         + "Item/Process: " + item_name + "\n"
-                                         + "Description: " + item_description)
+        content = "🌈" + type_of_post + post_id + "\n" \
+                  + "Name: " + name + "\n" \
+                  + "Item/Process: " + item_name + "\n" \
+                  + "Description: " + item_description
     else:
         context.bot.send_message(text=convo.invalid_response, chat_id=chat_id)
         content = ""
-    print(content)
-    send_post(content)
-
-    db.add_history_entry("false", username, chat_id)
+    return content
 
 
-def send_post(content):
-    uri = "https://api.telegram.org/bot967526375:AAEtE0EXObee7jS-3i7ejXO2NpiG9piHQr4/sendMessage?chat_id" \
-          "=@ruaok&text=%s" % content
-    urlopen(uri)
+def send_post(context, content):
+    context.bot.send_message(text=content, chat_id="@ruaok")
 
 
 def check_username(username):
