@@ -24,7 +24,7 @@ class Messages:
            "/markpost - to mark post as fulfilled\n" \
            "/cancel - to cancel the current process"
     thank_you = "Thank you for your generosity and kindness, this would mean so much to the children and youths in the" \
-                " community Your offer/request has successfully been posted " \
+                " community. Your offer/request has successfully been posted " \
                 "to the channel @RUAOK. "
 
     # question messages
