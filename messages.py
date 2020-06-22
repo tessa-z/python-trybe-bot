@@ -23,8 +23,9 @@ class Messages:
            "/checkpost - to check post availability\n" \
            "/markpost - to mark post as fulfilled\n" \
            "/cancel - to cancel the current process"
-    thank_you = "Thank you for being a part of the Trybe community! Your offer/request has successfully been posted " \
-                "to the Trybe Services channel @RUAOK. "
+    thank_you = "Thank you for your generosity and kindness, this would mean so much to the children and youths in the" \
+                " community Your offer/request has successfully been posted " \
+                "to the channel @RUAOK. "
 
     # question messages
     ask_name = "What's your name?"
