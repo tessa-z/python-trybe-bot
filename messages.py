@@ -63,6 +63,9 @@ class Messages:
     post_not_found = "Oh no, I can't find the post in my database!"
     appendix_message = "Send me another number or /cancel to end process."
 
+    # contact moderator
+    contact_us = "You can reach our moderator at: @tessa_z"
+
     # easter egg messages
     gif_seal_0 = "Wow hello!"
     gif_seal_1 = "You have found a seal of approval."

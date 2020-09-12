@@ -81,6 +81,11 @@ def mark_post(update, context):
     db.update_data(chat_id, "state", 0)
 
 
+def contact_mod(update, context):
+    chat_id = update.effective_chat.id
+    context.bot.send_message(text=convo.contact_us, chat_id=chat_id)
+
+
 def sticker_(update, context):
     sticker_set = context.bot.get_sticker_set(update.message.sticker.set_name)
     random_sticker_id = get_random_sticker_id(sticker_set)
@@ -119,6 +124,9 @@ def setup_handlers():
 
     mark_post_handler = CommandHandler('markpost', mark_post)
     dispatcher.add_handler(mark_post_handler)
+
+    contact_mod_handler = CommandHandler('contactmod', contact_mod)
+    dispatcher.add_handler(contact_mod_handler)
 
     chat_handler = MessageHandler(Filters.text & (~Filters.command), chat_)
     dispatcher.add_handler(chat_handler)
