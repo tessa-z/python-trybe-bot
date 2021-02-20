@@ -7,12 +7,12 @@ from telegram.ext import CommandHandler
 from telegram.ext import MessageHandler, Filters
 
 import messages
-import database
+import fbhelper
 import convologic
 import keyboard
 
 convo = messages.Messages()
-db = database.FirebaseHelper()
+db = fbhelper.FirebaseHelper()
 kb = keyboard.KeyBoard()
 
 updater = Updater(token='967526375:AAEtE0EXObee7jS-3i7ejXO2NpiG9piHQr4', use_context=True)
@@ -50,8 +50,9 @@ def create_post(update, context):
 
 
 def chat_(update, context):
+    print(update)
     chat_id = update.effective_chat.id
-    user_input = update.message.text
+    user_input = update.message
     current_command = db.read_data_pending(chat_id, "command")
     if current_command == "/checkpost":
         convologic.handle_check_post(chat_id, user_input, context)
@@ -60,6 +61,7 @@ def chat_(update, context):
     elif current_command == "/createpost":
         convologic.handle_create_post(chat_id, user_input, context)
     else:
+        # echo back message
         context.bot.send_message(chat_id=update.effective_chat.id, text=update.message.text)
 
 
@@ -130,6 +132,9 @@ def setup_handlers():
 
     chat_handler = MessageHandler(Filters.text & (~Filters.command), chat_)
     dispatcher.add_handler(chat_handler)
+
+    photo_handler = MessageHandler(Filters.photo, chat_)
+    dispatcher.add_handler(photo_handler)
 
     sticker_handler = MessageHandler(Filters.sticker, sticker_)
     dispatcher.add_handler(sticker_handler)

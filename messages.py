@@ -43,6 +43,8 @@ class Messages:
     ask_item_description = "Give a short description for the item or service you are requesting for."
     ask_condition = "Is your item new or used?"
     ask_condition_rating = "Out of 10, what is the condition of the item or the proficiency of your service?"
+    ask_offer_photo_0 = "Please send me a photo of your offer to go with the post. (Optional)"
+    ask_offer_photo_1 = "Else, select or send me the word Skip"
     ask_preview_0 = "Here's how your post will look on the channel:"
     ask_preview_1 = "Should I go ahead and post it?"
     ask_preview_cancelled = "Your post has been cancelled! Send /createpost to to make another post."
