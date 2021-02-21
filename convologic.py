@@ -145,10 +145,14 @@ def handle_create_post(chat_id, user_input, context):
         else:
             context.bot.send_message(text=convo.invalid_range, chat_id=chat_id)
     elif prev_conversation_state == 6:
-        if user_input.text == "No":
-            db.update_data(chat_id, "photo", user_input.photo[0].file_id)
+        if user_input.photo is not None:
+            photo_id = user_input.photo[1].file_id
+            db.update_data(chat_id, "photo_id", photo_id)
             db.update_state(chat_id, 7)
-            context.bot.send_message(text=convo.ask_ph, chat_id=chat_id, reply_markup=kb.preview)
+            preview_content = construct_post(chat_id, context)
+            context.bot.send_message(text=convo.ask_preview_0, chat_id=chat_id)
+            context.bot.send_photo(caption=preview_content, chat_id=chat_id, photo=photo_id)
+            context.bot.send_message(text=convo.ask_preview_1, chat_id=chat_id, reply_markup=kb.preview)
         elif user_input.text == "Skip":
             db.update_state(chat_id, 7)
             preview_content = construct_post(chat_id, context)
@@ -156,7 +160,7 @@ def handle_create_post(chat_id, user_input, context):
             context.bot.send_message(text=preview_content, chat_id=chat_id)
             context.bot.send_message(text=convo.ask_preview_1, chat_id=chat_id, reply_markup=kb.preview)
         else:
-            context.bot.send_message(text=convo.invalid_range, chat_id=chat_id)
+            context.bot.send_message(text=convo.invalid_photo, chat_id=chat_id)
     elif prev_conversation_state == 7:
         if user_input.text == "Great, please post!":
             username_id = context.bot.get_chat(chat_id=chat_id).username

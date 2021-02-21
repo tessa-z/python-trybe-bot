@@ -6,6 +6,7 @@ class Messages:
     invalid_response = "I don't get what you mean. Cancelling process.."
     invalid_range = "Please choose a whole number from 0 to 10!"
     invalid_number = "Please send me a whole number!"
+    invalid_photo = "Photo not found, please send me a photo or send Skip to go to the next step"
     system_error = "Something went wrong oof. Thanks for finding the bug!"
 
     # default messages
