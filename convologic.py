@@ -80,7 +80,7 @@ def handle_create_post(chat_id, user_input, context):
             username_id = context.bot.get_chat(chat_id=chat_id).username
             if username_id is not None:
                 context.bot.send_message(text=convo.ask_type, chat_id=chat_id, reply_markup=kb.options)
-                db.update_data(chat_id, "username", username_id)
+                db.update_data(chat_id, "chat_id", chat_id)
                 db.update_state(chat_id, 2)
             else:
                 context.bot.send_message(text=convo.ask_username_missing_0, chat_id=chat_id, reply_markup=kb.removekb)
@@ -245,13 +245,6 @@ def construct_post(chat_id, context):
         context.bot.send_message(text=convo.invalid_response, chat_id=chat_id)
         content = ""
     return content
-
-
-def check_username(username):
-    if username[0] != "@":
-        return "@" + username.lower()
-    else:
-        return username.lower()
 
 
 def check_cond_rating(cond_rating):
