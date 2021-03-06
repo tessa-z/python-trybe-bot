@@ -189,14 +189,15 @@ def handle_create_post(chat_id, user_input, context):
         else:
             context.bot.send_message(text=convo.invalid_photo, chat_id=chat_id)
     elif prev_conversation_state == 8:
-        if user_input.text == "Great, please post!":
-            username_id = context.bot.get_chat(chat_id=chat_id).username
+        if user_input.text == "Yes, send to moderators!":
             actual_content = construct_post(chat_id, context)
-            send_post(context, actual_content)
+            if get_photo_id(chat_id):
+                context.bot.send_photo(caption=actual_content, chat_id="@ruaok", photo=get_photo_id(chat_id))
+            else:
+                context.bot.send_message(text=actual_content, chat_id="@ruaok")
             context.bot.send_message(text=convo.thank_you, chat_id=chat_id, reply_markup=kb.removekb)
-            db.delete_pending_activity(chat_id)
-            db.add_history_entry("false", username_id, chat_id)
-        elif user_input.text == "Oh no, cancel post!":
+            # update mod db
+        elif user_input.text == "Wait, something\'s wrong, cancel post!":
             context.bot.send_message(text=convo.ask_preview_cancelled, chat_id=chat_id)
             db.delete_pending_activity(chat_id)
     else:
@@ -240,10 +241,6 @@ def construct_post(chat_id, context):
         context.bot.send_message(text=convo.invalid_response, chat_id=chat_id)
         content = ""
     return content
-
-
-def send_post(context, content):
-    context.bot.send_message(text=content, chat_id="@ruaok")
 
 
 def check_username(username):
