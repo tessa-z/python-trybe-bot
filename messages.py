@@ -7,6 +7,8 @@ class Messages:
     invalid_range = "Please choose a whole number from 0 to 10!"
     invalid_number = "Please send me a whole number!"
     invalid_photo = "Photo not found, please send me a photo or send Skip to go to the next step"
+    invalid_desc_length_0 = "Oops, the description is too long."
+    invalid_desc_length_1 = "Please send me a shorter description of no more than approximately 2-3 lines."
     system_error = "Something went wrong oof. Thanks for finding the bug!"
 
     # default messages
@@ -25,8 +27,7 @@ class Messages:
            "/markpost - to mark post as fulfilled\n" \
            "/cancel - to cancel the current process"
     thank_you = "Thank you for your generosity and kindness, this would mean so much to the children and youths in the" \
-                " community. Your offer/request has successfully been posted " \
-                "to the channel @RUAOK. "
+                " community. Your offer/request will be posted to the channel @RUAOK once approved by our moderators."
 
     # question messages
     ask_name = "What's your name?"
@@ -39,9 +40,12 @@ class Messages:
     ask_username_missing_1 = "You can do so by going to your Telegram Settings page"
     ask_username_missing_2 = "Come back and /createpost when you're ready!"
     ask_type = "Would you like to make an offer or a request today?"
+    ask_offer_category = "What category of item/service are you looking for?"
+    ask_request_category = "What category of item/service are you offering?"
     ask_offer_item_name = "Give a name for the item or service you are offering!"
     ask_request_item_name = "Give a name for the item or service you are requesting for."
-    ask_item_description = "Give a short description for the item or service you are requesting for."
+    ask_item_description_0 = "Give a short description for the item or service you are requesting for."
+    ask_item_description_1 = "Please give a mid-length description of less than 100 characters (~ 2-3 lines)"
     ask_condition = "Is your item new or used?"
     ask_condition_rating = "Out of 10, what is the condition of the item or the proficiency of your service?"
     ask_offer_photo_0 = "Please send me a photo of your offer to go with the post. (Optional)"

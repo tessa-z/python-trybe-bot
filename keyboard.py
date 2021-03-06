@@ -7,6 +7,7 @@ class KeyBoard:
         self.forcereplykb = self.force_reply()
         self.removekb = self.remove_keyboard()
         self.options = self.build_keyboard1()
+        self.category = self.build_keyboard6()
         self.itemcondition = self.build_keyboard2()  # extract this into a setup function
         self.usernameget = self.build_keyboard3()
         self.preview = self.build_keyboard4()
@@ -34,6 +35,12 @@ class KeyBoard:
 
     def build_keyboard5(self):
         keyboard = [['Skip']]
+        reply_markup = {"keyboard": keyboard, "resize_keyboard": True, "one_time_keyboard": True}
+        return json.dumps(reply_markup)
+
+    def build_keyboard6(self):
+        keyboard = [['Apparel'], ['Books/Stationery'], ['Electronics'],
+                    ['Furniture/Appliances'], ['Toys/Games'], ['Others']]
         reply_markup = {"keyboard": keyboard, "resize_keyboard": True, "one_time_keyboard": True}
         return json.dumps(reply_markup)
 

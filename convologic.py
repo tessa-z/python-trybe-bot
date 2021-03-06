@@ -2,7 +2,6 @@ import string
 
 from trybebot import (db, convo, kb)
 
-
 TOKEN = "967526375:AAEtE0EXObee7jS-3i7ejXO2NpiG9piHQr4"
 URL = "https://api.telegram.org/bot{}/".format(TOKEN)
 
@@ -15,7 +14,8 @@ def handle_check_post(chat_id, user_input, context):
         if is_expired is not None:
             if is_expired == "false":
                 context.bot.send_message(text=convo.check_post_not_expired, chat_id=chat_id)
-                context.bot.send_message(text=convo.check_post_getusername, chat_id=chat_id, reply_markup=kb.usernameget)
+                context.bot.send_message(text=convo.check_post_getusername, chat_id=chat_id,
+                                         reply_markup=kb.usernameget)
                 db.update_data(chat_id, "inquiring", user_input.text)
             elif is_expired == "true":
                 context.bot.send_message(text=convo.check_post_expired, chat_id=chat_id)
@@ -28,7 +28,8 @@ def handle_check_post(chat_id, user_input, context):
             post_id = int(db.read_data_pending(chat_id, "inquiring"))
             post_owner_id = str(db.read_data_history(post_id, "chat_id"))
             owner_username_id = context.bot.get_chat(chat_id=post_owner_id).username
-            context.bot.send_message(text=convo.check_post_sendusername + owner_username_id, chat_id=chat_id, reply_markup=kb.removekb)
+            context.bot.send_message(text=convo.check_post_sendusername + owner_username_id, chat_id=chat_id,
+                                     reply_markup=kb.removekb)
         elif user_input.text == "Maybe later":
             context.bot.send_message(text=convo.check_post_nogetusername, chat_id=chat_id, reply_markup=kb.removekb)
         else:
@@ -94,74 +95,100 @@ def handle_create_post(chat_id, user_input, context):
         else:
             context.bot.send_message(text=convo.invalid_options, chat_id=chat_id)
     elif prev_conversation_state == 2:
+        # ask category
         if user_input.text == "Offer":
-            context.bot.send_message(text=convo.ask_offer_item_name, chat_id=chat_id, reply_markup=kb.forcereplykb)
+            context.bot.send_message(text=convo.ask_offer_category, chat_id=chat_id, reply_markup=kb.category)
             db.update_data(chat_id, "type", user_input.text)
             db.update_state(chat_id, 3)
         elif user_input.text == "Request":
-            context.bot.send_message(text=convo.ask_request_item_name, chat_id=chat_id, reply_markup=kb.forcereplykb)
+            context.bot.send_message(text=convo.ask_request_category, chat_id=chat_id, reply_markup=kb.category)
             db.update_data(chat_id, "type", user_input.text)
             db.update_state(chat_id, 3)
         else:
-            context.bot.send_message(text=convo.invalid_options, chat_id=chat_id)  # fail safe measure any
+            context.bot.send_message(text=convo.invalid_options, chat_id=chat_id)
         print(str(db.read_state(chat_id)))
     elif prev_conversation_state == 3:
+        # check if within the categories
+        if user_input.text in ['Apparel', 'Books/Stationery', 'Electronics', 'Furniture/Appliances',
+                               'Toys/Games', 'Others']:
+            type_of_post = db.read_data_pending(chat_id, "type")
+            if type_of_post == "Offer":
+                context.bot.send_message(text=convo.ask_offer_item_name, chat_id=chat_id, reply_markup=kb.forcereplykb)
+                db.update_data(chat_id, "category", user_input.text)
+                db.update_state(chat_id, 4)
+            elif type_of_post == "Request":
+                context.bot.send_message(text=convo.ask_request_item_name, chat_id=chat_id,
+                                         reply_markup=kb.forcereplykb)
+                db.update_data(chat_id, "category", user_input.text)
+                db.update_state(chat_id, 4)
+        else:
+            context.bot.send_message(text=convo.invalid_options, chat_id=chat_id)
+        print(str(db.read_state(chat_id)))
+    elif prev_conversation_state == 4:
         type_of_post = db.read_data_pending(chat_id, "type")
         if type_of_post == "Offer":
             context.bot.send_message(text=convo.ask_condition, chat_id=chat_id, reply_markup=kb.itemcondition)
             db.update_data(chat_id, "item_name", user_input.text)
-            db.update_state(chat_id, 4)
+            db.update_state(chat_id, 5)
         elif type_of_post == "Request":
-            context.bot.send_message(text=convo.ask_item_description, chat_id=chat_id, reply_markup=kb.forcereplykb)
+            context.bot.send_message(text=convo.ask_item_description_0, chat_id=chat_id)
+            context.bot.send_message(text=convo.ask_item_description_1, chat_id=chat_id, reply_markup=kb.forcereplykb)
             db.update_data(chat_id, "item_name", user_input.text)
-            db.update_state(chat_id, 4)
+            db.update_state(chat_id, 5)
         else:
-            context.bot.send_message(text=convo.invalid_response, chat_id=chat_id)  # fail safe measure any
+            context.bot.send_message(text=convo.invalid_response, chat_id=chat_id)
         print(str(db.read_state(chat_id)))
-    elif prev_conversation_state == 4:  # updated item name, update condition now
+    elif prev_conversation_state == 5:  # updated item name, update condition now
         type_of_post = db.read_data_pending(chat_id, "type")
         if type_of_post == "Offer":
             if user_input.text == "New" or user_input.text == "Used":
                 context.bot.send_message(text=convo.ask_condition_rating, chat_id=chat_id, reply_markup=kb.forcereplykb)
                 db.update_data(chat_id, "condition", user_input.text)  # update condition
-                db.update_state(chat_id, 5)
+                db.update_state(chat_id, 6)
                 print(str(db.read_state(chat_id)))
             else:
                 context.bot.send_message(text=convo.invalid_options, chat_id=chat_id)
+        elif type_of_post == "Request":
+            # check if satisfies length requirements
+            if len(user_input.text) > 100:
+                context.bot.send_message(text=convo.invalid_desc_length_0, chat_id=chat_id)
+                context.bot.send_message(text=convo.invalid_desc_length_1, chat_id=chat_id)
+            else:
+                db.update_data(chat_id, "item_description", user_input.text)
+                db.update_state(chat_id, 8)
+                preview_content = construct_post(chat_id, context)
+                context.bot.send_message(text=convo.ask_preview_0, chat_id=chat_id)
+                context.bot.send_message(text=preview_content, chat_id=chat_id)
+                context.bot.send_message(text=convo.ask_preview_1, chat_id=chat_id, reply_markup=kb.preview)
         else:
-            db.update_data(chat_id, "item_description", user_input.text)
-            db.update_state(chat_id, 7)
-            preview_content = construct_post(chat_id, context)
-            context.bot.send_message(text=convo.ask_preview_0, chat_id=chat_id)
-            context.bot.send_message(text=preview_content, chat_id=chat_id)
-            context.bot.send_message(text=convo.ask_preview_1, chat_id=chat_id, reply_markup=kb.preview)
-    elif prev_conversation_state == 5:
+            context.bot.send_message(text=convo.invalid_response, chat_id=chat_id)
+    elif prev_conversation_state == 6:
         # would you like to provide a picture of your item?
         if check_cond_rating(user_input.text):
             db.update_data(chat_id, "cond_rating", user_input.text)
-            db.update_state(chat_id, 6)
+            db.update_state(chat_id, 7)
             context.bot.send_message(text=convo.ask_offer_photo_0, chat_id=chat_id)
             context.bot.send_message(text=convo.ask_offer_photo_1, chat_id=chat_id, reply_markup=kb.skip)
         else:
             context.bot.send_message(text=convo.invalid_range, chat_id=chat_id)
-    elif prev_conversation_state == 6:
-        if user_input.photo is not None:
+    elif prev_conversation_state == 7:
+        if user_input.photo:
             photo_id = user_input.photo[1].file_id
             db.update_data(chat_id, "photo_id", photo_id)
-            db.update_state(chat_id, 7)
+            db.update_state(chat_id, 8)
             preview_content = construct_post(chat_id, context)
             context.bot.send_message(text=convo.ask_preview_0, chat_id=chat_id)
             context.bot.send_photo(caption=preview_content, chat_id=chat_id, photo=photo_id)
             context.bot.send_message(text=convo.ask_preview_1, chat_id=chat_id, reply_markup=kb.preview)
         elif user_input.text == "Skip":
-            db.update_state(chat_id, 7)
+            db.update_state(chat_id, 8)
             preview_content = construct_post(chat_id, context)
             context.bot.send_message(text=convo.ask_preview_0, chat_id=chat_id)
             context.bot.send_message(text=preview_content, chat_id=chat_id)
             context.bot.send_message(text=convo.ask_preview_1, chat_id=chat_id, reply_markup=kb.preview)
         else:
             context.bot.send_message(text=convo.invalid_photo, chat_id=chat_id)
-    elif prev_conversation_state == 7:
+    elif prev_conversation_state == 8:
         if user_input.text == "Great, please post!":
             username_id = context.bot.get_chat(chat_id=chat_id).username
             actual_content = construct_post(chat_id, context)
@@ -177,13 +204,20 @@ def handle_create_post(chat_id, user_input, context):
         db.delete_pending_activity(chat_id)
 
 
+def get_photo_id(chat_id):
+    post_details = db.read_post_data(chat_id)
+
+    return post_details.get("photo_id")
+
+
 def construct_post(chat_id, context):
     post_details = db.read_post_data(chat_id)
 
     # get compulsory details for fields
-    type_of_post = post_details.get("type", None)
+    type_of_post = str(post_details.get("type", None))
     name = string.capwords(post_details.get("name", None))
-    item_name = post_details.get("item_name", None).capitalize()
+    item_category = "#" + str(post_details.get("category", None)).lower()
+    item_name = str(post_details.get("item_name", None)).capitalize()
     post_id = " #" + str(db.read_latest_index())
 
     if type_of_post == "Offer":  # Offer
@@ -191,6 +225,7 @@ def construct_post(chat_id, context):
         cond_rating = post_details.get("cond_rating")
         content = "✨" + type_of_post + post_id + "\n" \
                   + "Name: " + name + "\n" \
+                  + "Category:" + item_category + "\n" \
                   + "Item/Process: " + item_name + "\n" \
                   + "Condition: " + condition + "; " + cond_rating + "/10"
 
@@ -198,6 +233,7 @@ def construct_post(chat_id, context):
         item_description = post_details.get("item_description").capitalize()
         content = "🌈" + type_of_post + post_id + "\n" \
                   + "Name: " + name + "\n" \
+                  + "Category:" + item_category + "\n" \
                   + "Item/Process: " + item_name + "\n" \
                   + "Description: " + item_description
     else:
