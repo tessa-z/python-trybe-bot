@@ -1,4 +1,5 @@
 import string
+import datetime
 
 from trybebot import (db, convo, kb)
 
@@ -34,10 +35,10 @@ def handle_check_post(chat_id, user_input, context):
             context.bot.send_message(text=convo.check_post_nogetusername, chat_id=chat_id, reply_markup=kb.removekb)
         else:
             context.bot.send_message(text=convo.invalid_options, chat_id=chat_id, reply_markup=kb.removekb)
-        db.delete_pending_activity(chat_id)
+        db.delete_from_node(chat_id, "post_pending")
     else:
         context.bot.send_message(text=convo.system_error, chat_id=chat_id, reply_markup=kb.removekb)
-        db.delete_pending_activity(chat_id)
+        db.delete_from_node(chat_id, "post_pending")
 
 
 def handle_mark_post(chat_id, user_input, context):
@@ -50,7 +51,7 @@ def handle_mark_post(chat_id, user_input, context):
                 if is_integer(user_input.text):
                     db.update_history_mark_expired(user_input.text)
                     context.bot.send_message(text=convo.mark_post_success, chat_id=chat_id)
-                    db.delete_pending_activity(chat_id)
+                    db.delete_from_node(chat_id, "post_pending")
                 else:
                     context.bot.send_message(text=convo.invalid_number, chat_id=chat_id)
             else:
@@ -85,13 +86,13 @@ def handle_create_post(chat_id, user_input, context):
                 context.bot.send_message(text=convo.ask_username_missing_0, chat_id=chat_id, reply_markup=kb.removekb)
                 context.bot.send_message(text=convo.ask_username_missing_1, chat_id=chat_id)
                 context.bot.send_message(text=convo.ask_username_missing_2, chat_id=chat_id)
-                db.delete_pending_activity(chat_id)
+                db.delete_from_node(chat_id, "post_pending")
             print(str(db.read_state(chat_id)))
         elif user_input.text == "Maybe later":
             context.bot.send_message(text=convo.ask_username_rejected_0, chat_id=chat_id, reply_markup=kb.removekb)
             context.bot.send_message(text=convo.ask_username_rejected_1, chat_id=chat_id, reply_markup=kb.removekb)
             context.bot.send_message(text=convo.process_terminated, chat_id=chat_id)
-            db.delete_pending_activity(chat_id)
+            db.delete_from_node(chat_id, "post_pending")
         else:
             context.bot.send_message(text=convo.invalid_options, chat_id=chat_id)
     elif prev_conversation_state == 2:
@@ -197,12 +198,15 @@ def handle_create_post(chat_id, user_input, context):
                 context.bot.send_message(text=actual_content, chat_id="@ruaok")
             context.bot.send_message(text=convo.thank_you, chat_id=chat_id, reply_markup=kb.removekb)
             # update mod db
+            epoch_submitted = str(round(datetime.datetime.now().timestamp() * 1000))
+            db.transfer_post_data(chat_id, "post_pending", "mod_pending", epoch_submitted)
+            db.delete_from_node(chat_id, "post_pending")
         elif user_input.text == "Wait, something\'s wrong, cancel post!":
             context.bot.send_message(text=convo.ask_preview_cancelled, chat_id=chat_id)
-            db.delete_pending_activity(chat_id)
+            db.delete_from_node(chat_id, "post_pending")
     else:
         context.bot.send_message(text=convo.invalid_response, chat_id=chat_id)
-        db.delete_pending_activity(chat_id)
+        db.delete_from_node(chat_id, "post_pending")
 
 
 def get_photo_id(chat_id):

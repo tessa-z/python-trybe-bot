@@ -28,13 +28,13 @@ def start_(update, context):
 def help_(update, context):
     chat_id = update.effective_chat.id
     context.bot.send_message(chat_id=chat_id, text=convo.help)
-    db.delete_pending_activity(chat_id)
+    db.delete_from_node(chat_id)
 
 
 def cancel_(update, context):
     chat_id = update.effective_chat.id
     context.bot.send_message(chat_id=chat_id, text=convo.process_terminated)
-    db.delete_pending_activity(chat_id)
+    db.delete_from_node(chat_id)
 
 
 def unknown_(update, context):

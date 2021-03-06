@@ -53,9 +53,17 @@ class FirebaseHelper:
         state_data = {"state": state}
         self.db.child("post_pending").child(owner).update(state_data)
 
-    def delete_pending_activity(self, owner):
-        self.db.child("post_pending").child(owner).remove()
+    def delete_from_node(self, owner, node):
+        self.db.child(node).child(owner).remove()
 
     def read_post_data(self, owner):
         post_details = self.db.child("post_pending").child(owner).get().val()
         return post_details
+
+    def transfer_node_data(self, owner, src_node, dst_node):
+        src_data = self.db.child(src_node).child(owner).get().val()
+        self.db.child(dst_node).child(owner).set(src_data)
+
+    def transfer_post_data(self, owner, src_node, dst_node, src_root):
+        src_data = self.db.child(src_node).child(owner).get().val()
+        self.db.child(dst_node).child(src_root).set(src_data)
