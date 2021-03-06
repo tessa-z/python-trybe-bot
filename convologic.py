@@ -225,7 +225,7 @@ def construct_post(chat_id, context):
         cond_rating = post_details.get("cond_rating")
         content = "✨" + type_of_post + post_id + "\n" \
                   + "Name: " + name + "\n" \
-                  + "Category:" + item_category + "\n" \
+                  + "Category: " + item_category + "\n" \
                   + "Item/Process: " + item_name + "\n" \
                   + "Condition: " + condition + "; " + cond_rating + "/10"
 
