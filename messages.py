@@ -1,6 +1,7 @@
 class Messages:
     # general info messages
-    process_terminated = "I just cancelled the process. Send /createpost to make a new post."
+    process_terminated = "I have cancelled the process. Send /createpost to make a new post, or send /help for more " \
+                         "info! "
     invalid_command = "Hm.. I don't know what you mean."
     invalid_options = "Please choose from the options provided below."
     invalid_response = "I don't get what you mean. Cancelling process.."
@@ -60,7 +61,7 @@ class Messages:
     check_post_expired = "Oh no, the offer/request you have checked is no longer available :("
     check_post_not_expired = "Great! The offer/request you have checked is still available."
     check_post_getusername = "Would you like to contact the owner of the post?"
-    check_post_sendusername = "You can contact them at: @"
+    check_post_sendusername = "Great. You can contact them at: "
     check_post_nogetusername = "Sure, just let me know when you are ready!"
 
     mark_post_0 = "Which post would you like to mark completed?"

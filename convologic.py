@@ -10,7 +10,6 @@ URL = "https://api.telegram.org/bot{}/".format(TOKEN)
 def handle_check_post(chat_id, user_input, context):
     prev_conversation_state = db.read_state(chat_id)
     if prev_conversation_state == 0:
-        db.update_state(chat_id, 1)
         is_expired = db.read_data_history(user_input.text, "expired")
         if is_expired is not None:
             if is_expired == "false":
@@ -24,11 +23,12 @@ def handle_check_post(chat_id, user_input, context):
                 context.bot.send_message(text=convo.system_error, chat_id=chat_id)
         else:
             context.bot.send_message(text=convo.post_not_found, chat_id=chat_id)
+        db.update_state(chat_id, 1)
     elif prev_conversation_state == 1:
         if user_input.text == "Sure!":
             post_id = int(db.read_data_pending(chat_id, "inquiring"))
             post_owner_id = str(db.read_data_history(post_id, "chat_id"))
-            owner_username_id = context.bot.get_chat(chat_id=post_owner_id).username
+            owner_username_id = "@" + str(context.bot.get_chat(chat_id=post_owner_id).username)
             context.bot.send_message(text=convo.check_post_sendusername + owner_username_id, chat_id=chat_id,
                                      reply_markup=kb.removekb)
         elif user_input.text == "Maybe later":
