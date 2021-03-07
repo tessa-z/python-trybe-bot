@@ -196,7 +196,7 @@ def handle_create_post(chat_id, user_input, context):
             epoch_submitted = str(round(datetime.datetime.now().timestamp() * 1000))
             db.transfer_post_data(chat_id, "post_pending", "mod_pending", epoch_submitted)
             db.delete_from_node(chat_id, "post_pending")
-        elif user_input.text == "Wait, post later!":
+        elif user_input.text == "Wait, send later!":
             context.bot.send_message(text=convo.ask_preview_cancelled, chat_id=chat_id)
     else:
         context.bot.send_message(text=convo.invalid_response, chat_id=chat_id)
@@ -232,7 +232,7 @@ def construct_post(chat_id, context):
         item_description = post_details.get("item_description").capitalize()
         content = "🌈" + type_of_post + post_id + "\n" \
                   + "Name: " + name + "\n" \
-                  + "Category:" + item_category + "\n" \
+                  + "Category: " + item_category + "\n" \
                   + "Item/Process: " + item_name + "\n" \
                   + "Description: " + item_description
     else:

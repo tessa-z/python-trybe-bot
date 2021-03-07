@@ -29,7 +29,7 @@ class KeyBoard:
         return json.dumps(reply_markup)
 
     def build_keyboard4(self):
-        keyboard = [['Yes, send to moderators!', 'Wait, post later!']]
+        keyboard = [['Yes, send to moderators!', 'Wait, send later!']]
         reply_markup = {"keyboard": keyboard, "resize_keyboard": True, "one_time_keyboard": True}
         return json.dumps(reply_markup)
 
