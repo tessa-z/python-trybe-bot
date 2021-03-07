@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import logging
+import os
 import random
 
 from telegram.ext import Updater
@@ -50,10 +51,10 @@ def create_post(update, context):
 
 
 def chat_(update, context):
-    print(update)
     chat_id = update.effective_chat.id
     user_input = update.message
     current_command = db.read_data_pending(chat_id, "command")
+
     if current_command == "/checkpost":
         convologic.handle_check_post(chat_id, user_input, context)
     elif current_command == "/markpost":
@@ -62,7 +63,7 @@ def chat_(update, context):
         convologic.handle_create_post(chat_id, user_input, context)
     else:
         # echo back message
-        context.bot.send_message(chat_id=update.effective_chat.id, text=update.message.text)
+        context.bot.send_message(chat_id=update.effective_chat.id, text=convo.chat_confusion)
 
 
 def check_post(update, context):
@@ -103,7 +104,7 @@ def animation_(update, context):
 
 def get_random_sticker_id(sticker_set):
     sticker_list = sticker_set.stickers
-    random_sticker_index = random.randint(0, len(sticker_list)-1)
+    random_sticker_index = random.randint(0, len(sticker_list) - 1)
     random_sticker_id = str(sticker_list[random_sticker_index].file_id)
     return random_sticker_id
 

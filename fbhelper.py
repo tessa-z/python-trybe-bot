@@ -14,6 +14,7 @@ class FirebaseHelper:
         firebase = pyrebase.initialize_app(config)
         # Get a reference to the database service
         self.db = firebase.database()
+        self.storage = firebase.storage()
 
     def read_state(self, owner):
         state_details = self.db.child("post_pending").child(owner).child("state").get().val()

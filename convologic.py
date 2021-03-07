@@ -1,3 +1,4 @@
+import os
 import string
 import datetime
 
@@ -166,6 +167,7 @@ def handle_create_post(chat_id, user_input, context):
     elif prev_conversation_state == 6:
         # would you like to provide a picture of your item?
         if check_cond_rating(user_input.text):
+            # TODO shift db statements to back
             db.update_data(chat_id, "cond_rating", user_input.text)
             db.update_state(chat_id, 7)
             context.bot.send_message(text=convo.ask_offer_photo_0, chat_id=chat_id)
@@ -175,18 +177,19 @@ def handle_create_post(chat_id, user_input, context):
     elif prev_conversation_state == 7:
         if user_input.photo:
             photo_id = user_input.photo[1].file_id
-            db.update_data(chat_id, "photo_id", photo_id)
-            db.update_state(chat_id, 8)
             preview_content = construct_post(chat_id, context)
             context.bot.send_message(text=convo.ask_preview_0, chat_id=chat_id)
             context.bot.send_photo(caption=preview_content, chat_id=chat_id, photo=photo_id)
             context.bot.send_message(text=convo.ask_preview_1, chat_id=chat_id, reply_markup=kb.preview)
-        elif user_input.text == "Skip":
+            db.update_data(chat_id, "photo_id", photo_id)
+            upload_photo(photo_id, context)
             db.update_state(chat_id, 8)
+        elif user_input.text == "Skip":
             preview_content = construct_post(chat_id, context)
             context.bot.send_message(text=convo.ask_preview_0, chat_id=chat_id)
             context.bot.send_message(text=preview_content, chat_id=chat_id)
             context.bot.send_message(text=convo.ask_preview_1, chat_id=chat_id, reply_markup=kb.preview)
+            db.update_state(chat_id, 8)
         else:
             context.bot.send_message(text=convo.invalid_photo, chat_id=chat_id)
     elif prev_conversation_state == 8:
@@ -207,6 +210,13 @@ def get_photo_id(chat_id):
     post_details = db.read_post_data(chat_id)
 
     return post_details.get("photo_id")
+
+
+def upload_photo(photo_id, context):
+    temp_path = "temp\{}.jpg".format(photo_id)
+    photo = context.bot.get_file(photo_id).download(custom_path=temp_path)
+    db.storage.child("user_uploads/{}.jpg".format(photo_id)).put(photo)
+    os.remove(temp_path)
 
 
 def construct_post(chat_id, context):

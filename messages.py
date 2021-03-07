@@ -11,6 +11,7 @@ class Messages:
     invalid_desc_length_0 = "Oops, the description is too long."
     invalid_desc_length_1 = "Please send me a shorter description of no more than approximately 2-3 lines."
     system_error = "Something went wrong oof. Thanks for finding the bug!"
+    chat_confusion = "Woat"
 
     # default messages
     welcome = "Hello there! Welcome to the R◡̈AOK channel, a community resource platform that serves mainly " \
