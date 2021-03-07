@@ -115,12 +115,12 @@ def handle_create_post(chat_id, user_input, context):
             type_of_post = db.read_data_pending(chat_id, "type")
             if type_of_post == "Offer":
                 context.bot.send_message(text=convo.ask_offer_item_name, chat_id=chat_id, reply_markup=kb.forcereplykb)
-                db.update_data(chat_id, "category", user_input.text)
+                db.update_data(chat_id, "item_category", user_input.text)
                 db.update_state(chat_id, 4)
             elif type_of_post == "Request":
                 context.bot.send_message(text=convo.ask_request_item_name, chat_id=chat_id,
                                          reply_markup=kb.forcereplykb)
-                db.update_data(chat_id, "category", user_input.text)
+                db.update_data(chat_id, "item_category", user_input.text)
                 db.update_state(chat_id, 4)
         else:
             context.bot.send_message(text=convo.invalid_options, chat_id=chat_id)
@@ -191,19 +191,13 @@ def handle_create_post(chat_id, user_input, context):
             context.bot.send_message(text=convo.invalid_photo, chat_id=chat_id)
     elif prev_conversation_state == 8:
         if user_input.text == "Yes, send to moderators!":
-            actual_content = construct_post(chat_id, context)
-            if get_photo_id(chat_id):
-                context.bot.send_photo(caption=actual_content, chat_id="@ruaok", photo=get_photo_id(chat_id))
-            else:
-                context.bot.send_message(text=actual_content, chat_id="@ruaok")
             context.bot.send_message(text=convo.thank_you, chat_id=chat_id, reply_markup=kb.removekb)
             # update mod db
             epoch_submitted = str(round(datetime.datetime.now().timestamp() * 1000))
             db.transfer_post_data(chat_id, "post_pending", "mod_pending", epoch_submitted)
             db.delete_from_node(chat_id, "post_pending")
-        elif user_input.text == "Wait, something\'s wrong, cancel post!":
+        elif user_input.text == "Wait, post later!":
             context.bot.send_message(text=convo.ask_preview_cancelled, chat_id=chat_id)
-            db.delete_from_node(chat_id, "post_pending")
     else:
         context.bot.send_message(text=convo.invalid_response, chat_id=chat_id)
         db.delete_from_node(chat_id, "post_pending")
@@ -221,7 +215,7 @@ def construct_post(chat_id, context):
     # get compulsory details for fields
     type_of_post = str(post_details.get("type", None))
     name = string.capwords(post_details.get("name", None))
-    item_category = "#" + str(post_details.get("category", None)).lower()
+    item_category = "#" + str(post_details.get("item_category", None)).lower()
     item_name = str(post_details.get("item_name", None)).capitalize()
     post_id = " #" + str(db.read_latest_index())
 
