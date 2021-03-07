@@ -62,8 +62,11 @@ def chat_(update, context):
     elif current_command == "/createpost":
         convologic.handle_create_post(chat_id, user_input, context)
     else:
-        # echo back message
-        context.bot.send_message(chat_id=update.effective_chat.id, text=convo.chat_confusion)
+        if update.effective_chat.id > 0:
+            # update is from user account
+            context.bot.send_message(chat_id=update.effective_chat.id, text=update.message.text)
+        else:
+            print(update)
 
 
 def check_post(update, context):

@@ -2,6 +2,8 @@ import os
 import string
 import datetime
 
+from telegram.constants import CHATACTION_TYPING
+
 from trybebot import (db, convo, kb)
 
 TOKEN = "967526375:AAEtE0EXObee7jS-3i7ejXO2NpiG9piHQr4"
@@ -168,10 +170,10 @@ def handle_create_post(chat_id, user_input, context):
         # would you like to provide a picture of your item?
         if check_cond_rating(user_input.text):
             # TODO shift db statements to back
-            db.update_data(chat_id, "cond_rating", user_input.text)
-            db.update_state(chat_id, 7)
             context.bot.send_message(text=convo.ask_offer_photo_0, chat_id=chat_id)
             context.bot.send_message(text=convo.ask_offer_photo_1, chat_id=chat_id, reply_markup=kb.skip)
+            db.update_data(chat_id, "cond_rating", user_input.text)
+            db.update_state(chat_id, 7)
         else:
             context.bot.send_message(text=convo.invalid_range, chat_id=chat_id)
     elif prev_conversation_state == 7:
@@ -179,6 +181,8 @@ def handle_create_post(chat_id, user_input, context):
             photo_id = user_input.photo[1].file_id
             preview_content = construct_post(chat_id, context)
             context.bot.send_message(text=convo.ask_preview_0, chat_id=chat_id)
+            # TODO add chat action typing to other clauses
+            context.bot.send_chat_action(chat_id=chat_id, action=CHATACTION_TYPING)
             context.bot.send_photo(caption=preview_content, chat_id=chat_id, photo=photo_id)
             context.bot.send_message(text=convo.ask_preview_1, chat_id=chat_id, reply_markup=kb.preview)
             db.update_data(chat_id, "photo_id", photo_id)
@@ -194,6 +198,7 @@ def handle_create_post(chat_id, user_input, context):
             context.bot.send_message(text=convo.invalid_photo, chat_id=chat_id)
     elif prev_conversation_state == 8:
         if user_input.text == "Yes, send to moderators!":
+            context.bot.send_chat_action(chat_id=chat_id, action=CHATACTION_TYPING)
             context.bot.send_message(text=convo.thank_you, chat_id=chat_id, reply_markup=kb.removekb)
             # update mod db
             epoch_submitted = str(round(datetime.datetime.now().timestamp() * 1000))

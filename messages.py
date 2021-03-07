@@ -7,7 +7,7 @@ class Messages:
     invalid_response = "I don't get what you mean. Cancelling process.."
     invalid_range = "Please choose a whole number from 0 to 10!"
     invalid_number = "Please send me a whole number!"
-    invalid_photo = "Photo not found, please send me a photo or send Skip to go to the next step"
+    invalid_photo = "Please send me a photo or send Skip to go to the next step"
     invalid_desc_length_0 = "Oops, the description is too long."
     invalid_desc_length_1 = "Please send me a shorter description of no more than approximately 2-3 lines."
     system_error = "Something went wrong oof. Thanks for finding the bug!"
