@@ -73,7 +73,7 @@ class Messages:
     appendix_message = "Send me another number or /cancel to end process."
 
     # contact moderator
-    contact_us = "You can reach our moderator at: @tessa_z"
+    contact_us = "You can contact us at: @skymakerr (Zeyu)"
 
     # easter egg messages
     gif_seal_0 = "Wow hello!"
