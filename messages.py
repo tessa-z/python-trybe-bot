@@ -21,12 +21,14 @@ class Messages:
               "/createpost - to make a new post\n" \
               "/checkpost - to check post availability\n" \
               "/markpost - to mark post as fulfilled\n" \
+              "/contactmod - to contact a SYNC moderator\n" \
               "/cancel - to cancel the current process\n"
     help = "Hi! How can I help?\n" \
            "Send me:\n" \
            "/createpost - to make a new post\n" \
            "/checkpost - to check post availability\n" \
            "/markpost - to mark post as fulfilled\n" \
+           "/contactmod - to contact a SYNC moderator\n" \
            "/cancel - to cancel the current process"
     thank_you = "Thank you for your generosity and kindness, this would mean so much to the children and youths in the" \
                 " community. Your offer/request will be posted to the channel @RUAOK once approved by our moderators."
