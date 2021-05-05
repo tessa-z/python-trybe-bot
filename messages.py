@@ -15,7 +15,7 @@ class Messages:
 
     # default messages
     welcome = "Hello there! Welcome to the R◡̈AOK channel, a community resource platform that serves mainly " \
-              "under-served and disadvantaged youth in the community.\n\n" \
+              "children and youths facing life and/or psychological adversities in the community.\n\n" \
               "This was created by @tessa_z in collaboration with SYNC.\n\n" \
               "I'll help you with your offers and requests! Send me:\n" \
               "/createpost - to make a new post\n" \
