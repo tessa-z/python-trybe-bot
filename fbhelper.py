@@ -1,10 +1,10 @@
 import pyrebase
 
 config = {
-    "apiKey": "AIzaSyCuzOK3YTeM5GhZqSIdLBbbFDTVlPcv8d4",
-    "authDomain": "python-trybe-bot.firebaseapp.com",
-    "databaseURL": "https://python-trybe-bot.firebaseio.com/",
-    "storageBucket": "python-trybe-bot.appspot.com"
+    "apiKey": "placeholder",
+    "authDomain": "placeholder",
+    "databaseURL": "placeholder",
+    "storageBucket": "placeholder"
 }
 
 
