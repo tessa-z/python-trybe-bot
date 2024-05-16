@@ -4,7 +4,7 @@ import requests
 
 from urllib import parse
 
-TOKEN = "967526375:AAEtE0EXObee7jS-3i7ejXO2NpiG9piHQr4"
+TOKEN = "PLACEHOLDER"
 URL = "https://api.telegram.org/bot{}/".format(TOKEN)
 
 
